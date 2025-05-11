@@ -1,24 +1,35 @@
+require('dotenv').config();
 const express = require('express');
-const bodyParser = require('body-parser');
+const mongoose = require('mongoose');
+const morgan = require('morgan');
+const cors = require('cors');
+const { errorHandler } = require('./middlewares/errorHandler');
+const logger = require('./utils/logger');
+
+// Importar rotas
 const authRoutes = require('./routes/authRoutes');
-const userRoutes = require('./routes/userRoutes');
 const productRoutes = require('./routes/productRoutes');
-const salesRoutes = require('./routes/salesRoutes');
-const authMiddleware = require('./middlewares/authMiddleware');
+const saleRoutes = require('./routes/saleRoutes');
 
 const app = express();
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 
-app.use(bodyParser.json());
+// Conexão com MongoDB
+require('./config/database');
 
-// Rotas públicas
-app.use('/auth', authRoutes);
+// Middlewares
+app.use(cors());
+app.use(express.json());
+app.use(morgan('combined', { stream: logger.stream }));
 
-// Rotas protegidas
-app.use('/users', authMiddleware.authenticate, userRoutes);
-app.use('/products', authMiddleware.authenticate, productRoutes);
-app.use('/sales', authMiddleware.authenticate, salesRoutes);
+// Rotas
+app.use('/api/auth', authRoutes);
+app.use('/api/products', productRoutes);
+app.use('/api/sales', saleRoutes);
+
+// Error handling
+app.use(errorHandler);
 
 app.listen(PORT, () => {
-  console.log(`🚀 Servidor rodando em http://localhost:${PORT}`);
+  logger.info(`Servidor rodando na porta ${PORT}`);
 });

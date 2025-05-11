@@ -1,35 +1,48 @@
 const jwt = require('jsonwebtoken');
-const SECRET_KEY = 'loja_portas_janelas_secret';
+const User = require('../models/user');
+const ErrorResponse = require('../utils/errorResponse');
 
-function authenticate(req, res, next) {
-  const token = req.headers['authorization'];
-  
+// Proteger rotas
+exports.protect = asyncHandler(async (req, res, next) => {
+  let token;
+
+  if (
+    req.headers.authorization &&
+    req.headers.authorization.startsWith('Bearer')
+  ) {
+    token = req.headers.authorization.split(' ')[1];
+  } else if (req.cookies.token) {
+    token = req.cookies.token;
+  }
+
+  // Verificar se token existe
   if (!token) {
-    return res.status(403).json({ error: 'Token não fornecido' });
+    return next(new ErrorResponse('Não autorizado a acessar esta rota', 401));
   }
-  
-  jwt.verify(token, SECRET_KEY, (err, decoded) => {
-    if (err) {
-      return res.status(401).json({ error: 'Token inválido' });
-    }
-    
-    req.user = decoded;
+
+  try {
+    // Verificar token
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+    req.user = await User.findById(decoded.id);
+
     next();
-  });
-}
-
-function isManager(req, res, next) {
-  if (req.user.role !== 'manager') {
-    return res.status(403).json({ error: 'Acesso restrito a gerentes' });
+  } catch (err) {
+    return next(new ErrorResponse('Não autorizado a acessar esta rota', 401));
   }
-  next();
-}
+});
 
-function isSeller(req, res, next) {
-  if (req.user.role !== 'seller' && req.user.role !== 'manager') {
-    return res.status(403).json({ error: 'Acesso restrito a vendedores' });
-  }
-  next();
-}
-
-module.exports = { authenticate, isManager, isSeller };
+// Autorizar por role
+exports.authorize = (...roles) => {
+  return (req, res, next) => {
+    if (!roles.includes(req.user.role)) {
+      return next(
+        new ErrorResponse(
+          `Usuário com role ${req.user.role} não está autorizado a acessar esta rota`,
+          403
+        )
+      );
+    }
+    next();
+  };
+};
