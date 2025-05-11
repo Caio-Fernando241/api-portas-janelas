@@ -15,11 +15,18 @@ module.exports = {
 
       const token = jwt.sign(
         { id: user.id, role: user.role },
-        process.env.JWT_SECRET || 'secret_fallback',
+        process.env.JWT_SECRET,
         { expiresIn: '8h' }
       );
 
-      res.json({ token });
+      res.json({ 
+        token,
+        user: {
+          id: user.id,
+          name: user.name,
+          role: user.role
+        }
+      });
     } catch (error) {
       res.status(500).json({ error: 'Erro no servidor' });
     }

@@ -1,15 +1,15 @@
-# API Loja de Portas e Janelas (JSON Version)
+# API Loja de Portas e Janelas
 
 ## Rotas Principais
 
 ### Autenticação
-`POST /api/auth/login` - Login (use admin@loja.com / 123456)
+`POST /api/auth/login`
 
 ### Produtos
-`GET /api/products` - Lista todos
-`POST /api/products` - Adiciona novo (apenas gerentes)
+`GET /api/products` - Listar todos
+`POST /api/products` - Criar novo (apenas gerentes)
 
-## Futuras Melhorias
-1. Conexão com MongoDB (substituir arquivos JSON)
-2. Variáveis de ambiente para segredos
-3. Integração com frontend
+## Instalação
+1. `npm install`
+2. Renomeie `.env.example` para `.env`
+3. `npm start`

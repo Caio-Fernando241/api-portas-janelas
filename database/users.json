@@ -3,7 +3,8 @@
     "id": 1,
     "name": "Gerente",
     "email": "gerente@loja.com",
-    "password": "$2a$10$xD7h/NTQ9WQYvBLOjl5ZNuTozJ5Z1q9AMRq.dW5yJ1upYKFgRrDdO", 
-    "role": "manager"
+    "password": "$2a$10$ExemploDeHash",
+    "role": "manager",
+    "createdAt": "2023-05-20T10:00:00Z"
   }
 ]

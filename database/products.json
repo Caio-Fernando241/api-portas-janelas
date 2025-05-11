@@ -1,1 +1,10 @@
-[]
+[
+  {
+    "id": 1,
+    "name": "Porta de Madeira",
+    "price": 599.90,
+    "stock": 50,
+    "category": "porta",
+    "createdAt": "2023-05-20T10:00:00Z"
+  }
+]
