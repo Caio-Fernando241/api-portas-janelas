@@ -1,8 +1,10 @@
 const express = require('express');
 const router = express.Router();
-const fs = require('fs');
-const path = require('path');
-const { isManager } = require('../middlewares/authMiddleware');
+const productController = require('../controllers/productController');
+const { authenticate } = require('../middlewares/auth');
+
+router.get('/', productController.getAllProducts);
+router.post('/', authenticate, productController.createProduct);
 
 const productsDB = path.join(__dirname, '../database/products.json');
 

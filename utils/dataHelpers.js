@@ -3,7 +3,8 @@ const path = require('path');
 
 module.exports = {
   readData: (file) => {
-    return JSON.parse(fs.readFileSync(path.join(__dirname, `../database/${file}.json`)));
+    const rawData = fs.readFileSync(path.join(__dirname, `../database/${file}.json`));
+    return JSON.parse(rawData);
   },
   writeData: (file, data) => {
     fs.writeFileSync(
