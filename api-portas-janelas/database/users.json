@@ -1,1 +1,9 @@
-[]
+[
+  {
+    "id": 1,
+    "name": "Admin",
+    "email": "admin@loja.com",
+    "password": "$2a$10$ExemploDeHash",
+    "role": "manager"
+  }
+]

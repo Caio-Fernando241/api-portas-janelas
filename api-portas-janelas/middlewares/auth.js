@@ -1,16 +1,24 @@
 const jwt = require('jsonwebtoken');
-const User = require('../models/user');
 
-module.exports = async (req, res, next) => {
+const authenticate = (req, res, next) => {
+  const token = req.header('Authorization')?.replace('Bearer ', '');
+  
+  if (!token) return res.status(401).json({ error: 'Acesso não autorizado' });
+
   try {
-    const token = req.header('Authorization').replace('Bearer ', '');
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    const user = await User.findOne({ _id: decoded.id, 'tokens.token': token });
-
-    if (!user) throw new Error();
-    req.user = user;
+    const decoded = jwt.verify(token, 'SEGREDO_PROVISORIO');
+    req.user = decoded;
     next();
-  } catch (e) {
-    res.status(401).send({ error: 'Autenticação necessária' });
+  } catch (err) {
+    res.status(401).json({ error: 'Token inválido' });
   }
 };
+
+const isManager = (req, res, next) => {
+  if (req.user.role !== 'manager') {
+    return res.status(403).json({ error: 'Acesso restrito a gerentes' });
+  }
+  next();
+};
+
+module.exports = { authenticate, isManager };

@@ -1,20 +1,14 @@
-require('dotenv').config();
 const express = require('express');
-const connectDB = require('./config/db');
-const authRoutes = require('./routes/authRoutes');
-const productRoutes = require('./routes/productRoutes');
-
 const app = express();
+const PORT = 3000;
 
-// Conecte ao banco de dados
-connectDB();
-
-// Middlewares
 app.use(express.json());
 
 // Rotas
-app.use('/api/auth', authRoutes);
-app.use('/api/products', productRoutes);
+app.use('/api/auth', require('./routes/authRoutes'));
+app.use('/api/products', require('./routes/productRoutes'));
+app.use('/api/sales', require('./routes/saleRoutes'));
 
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`Servidor rodando na porta ${PORT}`));
+app.listen(PORT, () => {
+  console.log(`API rodando em http://localhost:${PORT}`);
+});

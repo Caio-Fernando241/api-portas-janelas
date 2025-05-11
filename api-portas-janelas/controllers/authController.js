@@ -1,78 +1,25 @@
-const User = require('../models/user');
-const asyncHandler = require('../middlewares/asyncHandler');
-const ErrorResponse = require('../utils/errorResponse');
+const fs = require('fs');
+const path = require('path');
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
+const usersDB = path.join(__dirname, '../database/users.json');
 
-// @desc    Registrar usuário
-// @route   POST /api/auth/register
-// @access  Public
-exports.register = asyncHandler(async (req, res, next) => {
-  const { name, email, password, role } = req.body;
-
-  // Criar usuário
-  const user = await User.create({
-    name,
-    email,
-    password,
-    role
-  });
-
-  sendTokenResponse(user, 201, res);
-});
-
-// @desc    Login usuário
-// @route   POST /api/auth/login
-// @access  Public
-exports.login = asyncHandler(async (req, res, next) => {
+const login = (req, res) => {
   const { email, password } = req.body;
-
-  // Validar email e senha
-  if (!email || !password) {
-    return next(new ErrorResponse('Por favor forneça um email e senha', 400));
+  const users = JSON.parse(fs.readFileSync(usersDB));
+  
+  const user = users.find(u => u.email === email);
+  if (!user || !bcrypt.compareSync(password, user.password)) {
+    return res.status(401).json({ error: 'Credenciais inválidas' });
   }
 
-  // Checar usuário
-  const user = await User.findOne({ email }).select('+password');
+  const token = jwt.sign(
+    { id: user.id, role: user.role },
+    'SEGREDO_PROVISORIO', // Substitua por process.env.JWT_SECRET depois
+    { expiresIn: '8h' }
+  );
 
-  if (!user) {
-    return next(new ErrorResponse('Credenciais inválidas', 401));
-  }
-
-  // Checar senha
-  const isMatch = await user.matchPassword(password);
-
-  if (!isMatch) {
-    return next(new ErrorResponse('Credenciais inválidas', 401));
-  }
-
-  sendTokenResponse(user, 200, res);
-});
-
-// Helper para enviar token
-const sendTokenResponse = (user, statusCode, res) => {
-  const token = user.getSignedJwtToken();
-
-  const options = {
-    expires: new Date(
-      Date.now() + process.env.JWT_COOKIE_EXPIRE * 24 * 60 * 60 * 1000
-    ),
-    httpOnly: true
-  };
-
-  if (process.env.NODE_ENV === 'production') {
-    options.secure = true;
-  }
-
-  res
-    .status(statusCode)
-    .cookie('token', token, options)
-    .json({
-      success: true,
-      token,
-      user: {
-        id: user._id,
-        name: user.name,
-        email: user.email,
-        role: user.role
-      }
-    });
+  res.json({ token, user: { id: user.id, name: user.name, role: user.role } });
 };
+
+module.exports = { login };
